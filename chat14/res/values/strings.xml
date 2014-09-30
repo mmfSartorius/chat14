@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">chat14</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="action_settings">Settings</string>
+    <string name="username">Username</string>
+    <string name="password">Password</string>
+    <string name="login">Login</string>
+    <string name="exit">Exit</string>
+    <string name="remember">Remember</string>
+    <string name="registration">Registration</string>
+    <string name="email">Email</string>
+    <string name="back">Back</string>
+    <string name="register">Register</string>
+
+</resources>
