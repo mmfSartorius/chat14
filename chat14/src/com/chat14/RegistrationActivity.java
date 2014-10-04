@@ -29,6 +29,7 @@ import android.widget.EditText;
 import android.widget.Toast;
 
 import com.chat14.helpers.CompressUtils;
+import com.chat14.helpers.Generator;
 import com.chat14.helpers.model.CompressedData;
 import com.google.android.gms.gcm.GoogleCloudMessaging;
 
@@ -93,24 +94,37 @@ public class RegistrationActivity extends Activity {
 					list = CompressUtils.getCompressedAndChunkedData(
 							json.toString(), 500);
 					Log.d("myTag", list.get(0).toString());
-					data.putString("p", list.get(0).toString());
-					data.putString("s",
-							Integer.toString(json.toString().length()));
-					data.putString("c", "true");
 					data.putString("t", "0");
-
+					if (list.get(0).getCompressedPayload() != null) {
+						data.putString("p", list.get(0).getCompressedPayload());
+					}
+					if (list.get(0).getDecompressedSize() != null) {
+						data.putString("s", Integer.toString(list.get(0)
+								.getDecompressedSize()));
+					}
+					if (list.get(0).getCompressed() != null) {
+						data.putString("c",
+								Boolean.toString(list.get(0).getCompressed()));
+					}
+					if (list.get(0).getMessageId() != null) {
+						data.putString("msgId", list.get(0).getMessageId());
+					}
+					if (list.get(0).getSequenceNumber() != null) {
+						data.putString("sn", Integer.toString(list.get(0)
+								.getSequenceNumber()));
+					}
+					if (list.get(0).getTotalNumber() != null) {
+						data.putString("tn",
+								Integer.toString(list.get(0).getTotalNumber()));
+					}
 					Log.d("myTag", data.toString());
 
 					dialog = new ProgressDialog(RegistrationActivity.this);
 					dialog.setTitle("Registration");
 					dialog.setMessage("Please wait");
 
-					sendRequest = new SendRequest(
-							context,
-							dialog,
-							data,
-							Integer.toString(LoginActivity.id.getAndIncrement()),
-							gcm);
+					sendRequest = new SendRequest(context, dialog, data,
+							Generator.getInstance().getRandomUUID(), gcm);
 					sendRequest.execute();
 				}
 
