@@ -185,10 +185,6 @@ public class RegistrationActivity extends Activity {
 			Log.d("RegisterActivity",
 					"registerGCM - successfully registered with GCM server - regId: "
 							+ regId);
-		} else {
-			Toast.makeText(getApplicationContext(),
-					"RegId already available. RegId: " + regId,
-					Toast.LENGTH_LONG).show();
 		}
 		return regId;
 	}
@@ -246,9 +242,7 @@ public class RegistrationActivity extends Activity {
 
 			@Override
 			protected void onPostExecute(String msg) {
-				Toast.makeText(getApplicationContext(),
-						"Registered with GCM Server." + msg, Toast.LENGTH_LONG)
-						.show();
+
 			}
 		}.execute(null, null, null);
 	}
