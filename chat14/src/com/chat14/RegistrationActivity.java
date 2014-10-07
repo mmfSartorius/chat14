@@ -46,7 +46,7 @@ public class RegistrationActivity extends Activity {
 	public ProgressDialog dialog;
 	SendRequest sendRequest;
 	String regId;
-	Bundle data;
+	Bundle data, ack;
 	JSONObject json;
 	BroadcastReceiver receiver;
 
@@ -122,6 +122,8 @@ public class RegistrationActivity extends Activity {
 					dialog = new ProgressDialog(RegistrationActivity.this);
 					dialog.setTitle("Registration");
 					dialog.setMessage("Please wait");
+					dialog.show();
+					createReceiver();
 
 					sendRequest = new SendRequest(context, dialog, data,
 							Generator.getInstance().getRandomUUID(), gcm);
@@ -142,27 +144,26 @@ public class RegistrationActivity extends Activity {
 
 	}
 
-	@Override
-	protected void onDestroy() {
-		// TODO Auto-generated method stub
-		super.onDestroy();
-		if (receiver != null) {
-			unregisterReceiver(receiver);
-			receiver = null;
-		}
-	}
-
 	private void createReceiver() {
 		receiver = new BroadcastReceiver() {
 
 			@Override
 			public void onReceive(Context context, Intent intent) {
 				// TODO Auto-generated method stub
-
+				ack = intent.getExtras();
+				Log.d("myTag", "Registration receiver \n" + ack.toString());
+				if (receiver != null) {
+					unregisterReceiver(receiver);
+					receiver = null;
+				}
+				if (dialog.isShowing()) {
+					dialog.dismiss();
+				}
 			}
 		};
 		IntentFilter filter = new IntentFilter();
 		filter.addAction("com.google.android.c2dm.intent.RECEIVE");
+		registerReceiver(receiver, filter);
 
 	}
 
@@ -262,19 +263,6 @@ public class RegistrationActivity extends Activity {
 		editor.putString(REG_ID, regId);
 		editor.putInt(APP_VERSION, appVersion);
 		editor.commit();
-	}
-
-	private String convertIpAddress(int ipAddress) {
-		int ip0, ip1, ip2, ip3, tmp;
-
-		ip3 = ipAddress / 0x1000000;
-		tmp = ipAddress % 0x1000000;
-		ip2 = tmp / 0x10000;
-		tmp %= 0x10000;
-		ip1 = tmp / 0x100;
-		ip0 = tmp % 0x100;
-
-		return String.format("%d.%d.%d.%d", ip0, ip1, ip2, ip3);
 	}
 
 }

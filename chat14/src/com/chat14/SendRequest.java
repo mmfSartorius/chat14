@@ -34,12 +34,6 @@ public class SendRequest extends AsyncTask<Void, String, String> {
 	protected void onPreExecute() {
 		// TODO Auto-generated method stub
 		super.onPreExecute();
-		try {
-			dialog.show();
-		} catch (Exception e) {
-			// TODO: handle exception
-			e.printStackTrace();
-		}
 	}
 
 	@Override
@@ -59,9 +53,6 @@ public class SendRequest extends AsyncTask<Void, String, String> {
 	}
 
 	protected void onPostExecute(String result) {
-		if (dialog.isShowing()) {
-			dialog.dismiss();
-		}
 		Toast.makeText(context, result, Toast.LENGTH_LONG).show();
 	}
 
