@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -125,8 +127,8 @@ public class RegistrationActivity extends Activity {
 					dialog.show();
 					createReceiver();
 
-					sendRequest = new SendRequest(context, dialog, data,
-							Generator.getInstance().getRandomUUID(), gcm);
+					sendRequest = new SendRequest(data, Generator.getInstance()
+							.getRandomUUID(), gcm);
 					sendRequest.execute();
 				}
 
@@ -145,6 +147,7 @@ public class RegistrationActivity extends Activity {
 	}
 
 	private void createReceiver() {
+		createTimer();
 		receiver = new BroadcastReceiver() {
 
 			@Override
@@ -165,6 +168,24 @@ public class RegistrationActivity extends Activity {
 		filter.addAction("com.google.android.c2dm.intent.RECEIVE");
 		registerReceiver(receiver, filter);
 
+	}
+	
+	private void createTimer(){
+		Timer timer = new Timer();
+		timer.schedule(new TimerTask() {
+			
+			@Override
+			public void run() {
+				// TODO Auto-generated method stub
+				if (receiver != null) {
+					unregisterReceiver(receiver);
+					receiver = null;
+				}
+				if (dialog.isShowing()) {
+					dialog.dismiss();
+				}
+			}
+		}, 10000);
 	}
 
 	@Override

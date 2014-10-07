@@ -17,13 +17,8 @@ public class SendRequest extends AsyncTask<Void, String, String> {
 	Bundle data;
 	String id;
 	GoogleCloudMessaging gcm;
-	Context context;
-	ProgressDialog dialog;
 
-	SendRequest(Context context, ProgressDialog dialog, Bundle bundle,
-			String id, GoogleCloudMessaging gcm) {
-		this.context = context;
-		this.dialog = dialog;
+	SendRequest(Bundle bundle, String id, GoogleCloudMessaging gcm) {
 		data = bundle;
 		this.id = id;
 		this.gcm = gcm;

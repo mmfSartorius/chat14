@@ -203,7 +203,6 @@ public class LoginActivity extends Activity {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		};
-		Log.d("myTag", ip);
 		return ip;
 
 
