@@ -1,7 +1,5 @@
 package com.chat14;
 
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Timer;
@@ -17,18 +15,12 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.SharedPreferences;
-import android.content.pm.PackageInfo;
-import android.content.pm.PackageManager.NameNotFoundException;
-import android.os.AsyncTask;
 import android.os.Bundle;
-import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.Toast;
 
 import com.chat14.helpers.CompressUtils;
 import com.chat14.helpers.Generator;
@@ -37,13 +29,9 @@ import com.google.android.gms.gcm.GoogleCloudMessaging;
 
 public class RegistrationActivity extends Activity {
 
-	public static final String REG_ID = "regId";
-	private static final String APP_VERSION = "appVersion";
-
 	EditText username, email, password;
 	Button registration, back;
 
-	GoogleCloudMessaging gcm;
 	Context context;
 	public ProgressDialog dialog;
 	SendRequest sendRequest;
@@ -51,6 +39,7 @@ public class RegistrationActivity extends Activity {
 	Bundle data, ack;
 	JSONObject json;
 	BroadcastReceiver receiver;
+	GoogleCloudMessaging gcm;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -63,7 +52,7 @@ public class RegistrationActivity extends Activity {
 		email = (EditText) findViewById(R.id.emailRegistration);
 		password = (EditText) findViewById(R.id.passwordRegistration);
 
-		gcm = GoogleCloudMessaging.getInstance(this);
+		gcm = GoogleCloudMessaging.getInstance(context);
 
 		registration = (Button) findViewById(R.id.registrationFromRegistration);
 
@@ -72,7 +61,6 @@ public class RegistrationActivity extends Activity {
 			@Override
 			public void onClick(View arg0) {
 				// TODO Auto-generated method stub
-				regId = registerGCM();
 				if (username.getText().toString().length() != 0
 						&& email.getText().toString().length() != 0
 						&& password.getText().toString().length() != 0) {
@@ -146,6 +134,21 @@ public class RegistrationActivity extends Activity {
 
 	}
 
+	@Override
+	protected void onDestroy() {
+		// TODO Auto-generated method stub
+		super.onDestroy();
+		if (receiver != null) {
+			unregisterReceiver(receiver);
+			receiver = null;
+		}
+		if (dialog != null) {
+			if (dialog.isShowing()) {
+				dialog.dismiss();
+			}
+		}
+	}
+
 	private void createReceiver() {
 		createTimer();
 		receiver = new BroadcastReceiver() {
@@ -169,11 +172,11 @@ public class RegistrationActivity extends Activity {
 		registerReceiver(receiver, filter);
 
 	}
-	
-	private void createTimer(){
+
+	private void createTimer() {
 		Timer timer = new Timer();
 		timer.schedule(new TimerTask() {
-			
+
 			@Override
 			public void run() {
 				// TODO Auto-generated method stub
@@ -193,91 +196,6 @@ public class RegistrationActivity extends Activity {
 	protected Dialog onCreateDialog(int id) {
 		// TODO Auto-generated method stub
 		return super.onCreateDialog(id);
-	}
-
-	public String registerGCM() {
-
-		regId = getRegistrationId(context);
-
-		if (TextUtils.isEmpty(regId)) {
-
-			registerInBackground();
-
-			Log.d("RegisterActivity",
-					"registerGCM - successfully registered with GCM server - regId: "
-							+ regId);
-		}
-		return regId;
-	}
-
-	private String getRegistrationId(Context context) {
-		final SharedPreferences prefs = getSharedPreferences(
-				RegistrationActivity.class.getSimpleName(),
-				Context.MODE_PRIVATE);
-		String registrationId = prefs.getString(REG_ID, "");
-		if (registrationId.isEmpty()) {
-			return "";
-		}
-		int registeredVersion = prefs.getInt(APP_VERSION, Integer.MIN_VALUE);
-		int currentVersion = getAppVersion(context);
-		if (registeredVersion != currentVersion) {
-			return "";
-		}
-		return registrationId;
-	}
-
-	private static int getAppVersion(Context context) {
-		try {
-			PackageInfo packageInfo = context.getPackageManager()
-					.getPackageInfo(context.getPackageName(), 0);
-			return packageInfo.versionCode;
-		} catch (NameNotFoundException e) {
-			Log.d("RegisterActivity",
-					"I never expected this! Going down, going down!" + e);
-			throw new RuntimeException(e);
-		}
-	}
-
-	private void registerInBackground() {
-		new AsyncTask<Void, Void, String>() {
-			@Override
-			protected String doInBackground(Void... params) {
-				String msg = "";
-				try {
-					if (gcm == null) {
-						gcm = GoogleCloudMessaging.getInstance(context);
-					}
-					regId = gcm.register(Config.GOOGLE_PROJECT_ID);
-					Log.d("RegisterActivity", "registerInBackground - regId: "
-							+ regId);
-					msg = "Device registered, registration ID=" + regId;
-
-					storeRegistrationId(context, regId);
-				} catch (IOException ex) {
-					msg = "Error :" + ex.getMessage();
-					Log.d("RegisterActivity", "Error: " + msg);
-				}
-				Log.d("RegisterActivity", "AsyncTask completed: " + msg);
-				return msg;
-			}
-
-			@Override
-			protected void onPostExecute(String msg) {
-
-			}
-		}.execute(null, null, null);
-	}
-
-	private void storeRegistrationId(Context context, String regId) {
-		final SharedPreferences prefs = getSharedPreferences(
-				RegistrationActivity.class.getSimpleName(),
-				Context.MODE_PRIVATE);
-		int appVersion = getAppVersion(context);
-
-		SharedPreferences.Editor editor = prefs.edit();
-		editor.putString(REG_ID, regId);
-		editor.putInt(APP_VERSION, appVersion);
-		editor.commit();
 	}
 
 }
