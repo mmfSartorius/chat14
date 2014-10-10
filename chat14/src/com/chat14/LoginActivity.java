@@ -48,7 +48,7 @@ public class LoginActivity extends Activity {
 	private Context context;
 	private BroadcastReceiver receiver;
 	private String ip;
-	private Bundle data, ack;
+	private Bundle ack;
 	private JSONObject json;
 	private ProgressDialog dialog;
 	private GoogleCloudMessaging gcm;
@@ -135,58 +135,25 @@ public class LoginActivity extends Activity {
 	private void login() {
 		if (username.getText().toString().length() != 0
 				&& password.getText().toString().length() != 0) {
-			data = new Bundle();
 			json = new JSONObject();
 
 			try {
 				json.put(Config.LOGIN, username.getText().toString());
-				json.put(Config.PASSWORD, LoginActivity.encryptData(password
+				json.put(Config.PASSWORD, UtilityMethods.encryptData(password
 						.getText().toString()));
 				json.put(Config.EXTERNAL_IP, ip);
 			} catch (JSONException e) {
 				e.printStackTrace();
 			}
 
-			List<CompressedData> list = CompressUtils
-					.getCompressedAndChunkedData(json.toString(), 500);
+			createReceiver();
+			UtilityMethods.fillAndSendBundle(json, gcm);
 
-			for (int i = 0; i < list.size(); i++) {
-				CompressedData compressedData = list.get(i);
-				Log.d("myTag", compressedData.toString());
-				data.putString("t", "1");
-				if (compressedData.getCompressedPayload() != null) {
-					data.putString("p", compressedData.getCompressedPayload());
-				}
-				if (compressedData.getDecompressedSize() != null) {
-					data.putString("s",
-							Integer.toString(compressedData.getDecompressedSize()));
-				}
-				if (compressedData.getCompressed() != null) {
-					data.putString("c",
-							Boolean.toString(compressedData.getCompressed()));
-				}
-				if (compressedData.getMessageId() != null) {
-					data.putString("msgId", compressedData.getMessageId());
-				}
-				if (compressedData.getSequenceNumber() != null) {
-					data.putString("sn",
-							Integer.toString(compressedData.getSequenceNumber()));
-				}
-				if (compressedData.getTotalNumber() != null) {
-					data.putString("tn",
-							Integer.toString(compressedData.getTotalNumber()));
-				}
-				Log.d("myTag", data.toString());
-			}
 			dialog = new ProgressDialog(context);
 			dialog.setTitle("Login");
 			dialog.setMessage("Please wait");
 			dialog.show();
-			createReceiver();
 
-			SendRequest sendRequest = new SendRequest(data, Generator
-					.getInstance().getRandomUUID(), gcm);
-			sendRequest.execute();
 		}
 
 	}
@@ -234,43 +201,11 @@ public class LoginActivity extends Activity {
 	public static void storeInPreferences(Context context, String key,
 			String data) {
 		final SharedPreferences prefs = context.getSharedPreferences(
-				RegistrationActivity.class.getSimpleName(),
-				Context.MODE_PRIVATE);
+				LoginActivity.class.getSimpleName(), Context.MODE_PRIVATE);
 
 		SharedPreferences.Editor editor = prefs.edit();
 		editor.putString(key, data);
 		editor.commit();
-	}
-
-	private static String bytesToHexString(byte[] bytes) {
-		// http://stackoverflow.com/questions/332079
-		StringBuffer sb = new StringBuffer();
-		for (int i = 0; i < bytes.length; i++) {
-			String hex = Integer.toHexString(0xFF & bytes[i]);
-			if (hex.length() == 1) {
-				sb.append('0');
-			}
-			sb.append(hex);
-		}
-		return sb.toString();
-	}
-
-	public static String encryptData(String data) {
-
-		MessageDigest digest = null;
-		String hash = null;
-		try {
-			digest = MessageDigest.getInstance("SHA-256");
-			digest.update(data.getBytes());
-
-			hash = bytesToHexString(digest.digest());
-
-			Log.i("Eamorr", "result is " + hash);
-		} catch (NoSuchAlgorithmException e1) {
-			e1.printStackTrace();
-		}
-
-		return hash;
 	}
 
 	private String getCurrentIP() {

@@ -36,14 +36,13 @@ public class RegistrationActivity extends Activity {
 	private ProgressDialog dialog;
 	private SendRequest sendRequest;
 	private String regId;
-	private Bundle data, ack;
+	private Bundle ack;
 	private JSONObject json;
 	private BroadcastReceiver receiver;
 	private GoogleCloudMessaging gcm;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
-		// TODO Auto-generated method stub
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.registration_activity);
 		context = this;
@@ -64,65 +63,28 @@ public class RegistrationActivity extends Activity {
 				if (username.getText().toString().length() != 0
 						&& email.getText().toString().length() != 0
 						&& password.getText().toString().length() != 0) {
-					data = new Bundle();
 					json = new JSONObject();
 
 					try {
 						json.put(Config.LOGIN, username.getText().toString());
 						json.put(Config.EMAIL, email.getText().toString());
-						json.put(Config.PASSWORD, LoginActivity
+						json.put(Config.PASSWORD, UtilityMethods
 								.encryptData(password.getText().toString()));
 						json.put(Config.EXTERNAL_IP, getIntent().getExtras()
 								.get("ip"));
 					} catch (JSONException e) {
-						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
 					Log.d("myTag", json.toString());
 
-					List<CompressedData> list = CompressUtils
-							.getCompressedAndChunkedData(json.toString(), 500);
+					createReceiver();
+					UtilityMethods.fillAndSendBundle(json, gcm);
 
-					data.putString("t", "0");
-					for (int i = 0; i < list.size(); i++) {
-						CompressedData compressedData = list.get(i);
-						Log.d("myTag", compressedData.toString());
-						if (compressedData.getCompressedPayload() != null) {
-							data.putString("p",
-									compressedData.getCompressedPayload());
-						}
-						if (compressedData.getDecompressedSize() != null) {
-							data.putString("s", Integer.toString(compressedData
-									.getDecompressedSize()));
-						}
-						if (compressedData.getCompressed() != null) {
-							data.putString("c", Boolean.toString(compressedData
-									.getCompressed()));
-						}
-						if (compressedData.getMessageId() != null) {
-							data.putString("msgId",
-									compressedData.getMessageId());
-						}
-						if (compressedData.getSequenceNumber() != null) {
-							data.putString("sn", Integer
-									.toString(compressedData
-											.getSequenceNumber()));
-						}
-						if (compressedData.getTotalNumber() != null) {
-							data.putString("tn", Integer
-									.toString(compressedData.getTotalNumber()));
-						}
-						Log.d("myTag", data.toString());
-					}
 					dialog = new ProgressDialog(context);
 					dialog.setTitle("Registration");
 					dialog.setMessage("Please wait");
 					dialog.show();
-					createReceiver();
 
-					sendRequest = new SendRequest(data, Generator.getInstance()
-							.getRandomUUID(), gcm);
-					sendRequest.execute();
 				}
 
 			}
@@ -132,7 +94,6 @@ public class RegistrationActivity extends Activity {
 
 			@Override
 			public void onClick(View v) {
-				// TODO Auto-generated method stub
 				finish();
 			}
 		});
@@ -160,7 +121,6 @@ public class RegistrationActivity extends Activity {
 
 			@Override
 			public void onReceive(Context context, Intent intent) {
-				// TODO Auto-generated method stub
 				ack = intent.getExtras();
 				Log.d("myTag", "Registration receiver \n" + ack.toString());
 				if (receiver != null) {
@@ -184,7 +144,6 @@ public class RegistrationActivity extends Activity {
 
 			@Override
 			public void run() {
-				// TODO Auto-generated method stub
 				if (receiver != null) {
 					unregisterReceiver(receiver);
 					receiver = null;
