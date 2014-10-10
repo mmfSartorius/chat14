@@ -46,7 +46,7 @@ public class RegistrationActivity extends Activity {
 		// TODO Auto-generated method stub
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.registration_activity);
-		context = getApplicationContext();
+		context = this;
 
 		username = (EditText) findViewById(R.id.usernameRegistration);
 		email = (EditText) findViewById(R.id.emailRegistration);

@@ -45,7 +45,7 @@ public class LoginActivity extends Activity {
 	private EditText username, password;
 	private Button login, registration, exit;
 	private CheckBox checkBoxRemember;
-	private Context context = this;
+	private Context context;
 	private BroadcastReceiver receiver;
 	private String ip;
 	private Bundle data, ack;
@@ -61,6 +61,7 @@ public class LoginActivity extends Activity {
 		username = (EditText) findViewById(R.id.username);
 		password = (EditText) findViewById(R.id.password);
 		checkBoxRemember = (CheckBox) findViewById(R.id.checkBoxRemember);
+		context = this;
 
 		ip = getCurrentIP();
 		gcm = GoogleCloudMessaging.getInstance(context);
