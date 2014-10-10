@@ -14,9 +14,9 @@ import com.google.android.gms.gcm.GoogleCloudMessaging;
 
 public class RegisterInGCM {
 
-	String regId;
-	GoogleCloudMessaging gcm;
-	Context context;
+	private String regId;
+	private GoogleCloudMessaging gcm;
+	private Context context;
 
 	RegisterInGCM(Context context, GoogleCloudMessaging gcm) {
 		this.context = context;

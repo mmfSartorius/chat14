@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -43,18 +42,17 @@ import com.google.android.gms.gcm.GoogleCloudMessaging;
 
 public class LoginActivity extends Activity {
 
-	EditText username, password;
-	Button login, registration, exit;
-	CheckBox checkBoxRemember;
-	Context context = this;
-	public static AtomicInteger id = new AtomicInteger();
-	BroadcastReceiver receiver;
-	String ip;
-	Bundle data, ack;
-	JSONObject json;
-	ProgressDialog dialog;
-	GoogleCloudMessaging gcm;
-	String regId;
+	private EditText username, password;
+	private Button login, registration, exit;
+	private CheckBox checkBoxRemember;
+	private Context context = this;
+	private BroadcastReceiver receiver;
+	private String ip;
+	private Bundle data, ack;
+	private JSONObject json;
+	private ProgressDialog dialog;
+	private GoogleCloudMessaging gcm;
+	private String regId;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -75,7 +73,6 @@ public class LoginActivity extends Activity {
 
 			@Override
 			public void onClick(View v) {
-				// TODO Auto-generated method stub
 				login();
 
 			}
@@ -85,7 +82,6 @@ public class LoginActivity extends Activity {
 
 			@Override
 			public void onClick(View v) {
-				// TODO Auto-generated method stub
 				Intent intent = new Intent(context, RegistrationActivity.class);
 				intent.putExtra("ip", ip);
 				startActivity(intent);
@@ -97,7 +93,6 @@ public class LoginActivity extends Activity {
 
 			@Override
 			public void onClick(View v) {
-				// TODO Auto-generated method stub
 				finish();
 			}
 		});
@@ -105,7 +100,6 @@ public class LoginActivity extends Activity {
 
 	@Override
 	protected void onDestroy() {
-		// TODO Auto-generated method stub
 		super.onDestroy();
 		if (receiver != null) {
 			unregisterReceiver(receiver);
@@ -149,40 +143,41 @@ public class LoginActivity extends Activity {
 						.getText().toString()));
 				json.put(Config.EXTERNAL_IP, ip);
 			} catch (JSONException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 
-			List<CompressedData> list = new ArrayList<CompressedData>();
-			list = CompressUtils.getCompressedAndChunkedData(json.toString(),
-					500);
-			Log.d("myTag", list.get(0).toString());
-			data.putString("t", "1");
-			if (list.get(0).getCompressedPayload() != null) {
-				data.putString("p", list.get(0).getCompressedPayload());
-			}
-			if (list.get(0).getDecompressedSize() != null) {
-				data.putString("s",
-						Integer.toString(list.get(0).getDecompressedSize()));
-			}
-			if (list.get(0).getCompressed() != null) {
-				data.putString("c",
-						Boolean.toString(list.get(0).getCompressed()));
-			}
-			if (list.get(0).getMessageId() != null) {
-				data.putString("msgId", list.get(0).getMessageId());
-			}
-			if (list.get(0).getSequenceNumber() != null) {
-				data.putString("sn",
-						Integer.toString(list.get(0).getSequenceNumber()));
-			}
-			if (list.get(0).getTotalNumber() != null) {
-				data.putString("tn",
-						Integer.toString(list.get(0).getTotalNumber()));
-			}
-			Log.d("myTag", data.toString());
+			List<CompressedData> list = CompressUtils
+					.getCompressedAndChunkedData(json.toString(), 500);
 
-			dialog = new ProgressDialog(LoginActivity.this);
+			for (int i = 0; i < list.size(); i++) {
+				CompressedData compressedData = list.get(i);
+				Log.d("myTag", compressedData.toString());
+				data.putString("t", "1");
+				if (compressedData.getCompressedPayload() != null) {
+					data.putString("p", compressedData.getCompressedPayload());
+				}
+				if (compressedData.getDecompressedSize() != null) {
+					data.putString("s",
+							Integer.toString(compressedData.getDecompressedSize()));
+				}
+				if (compressedData.getCompressed() != null) {
+					data.putString("c",
+							Boolean.toString(compressedData.getCompressed()));
+				}
+				if (compressedData.getMessageId() != null) {
+					data.putString("msgId", compressedData.getMessageId());
+				}
+				if (compressedData.getSequenceNumber() != null) {
+					data.putString("sn",
+							Integer.toString(compressedData.getSequenceNumber()));
+				}
+				if (compressedData.getTotalNumber() != null) {
+					data.putString("tn",
+							Integer.toString(compressedData.getTotalNumber()));
+				}
+				Log.d("myTag", data.toString());
+			}
+			dialog = new ProgressDialog(context);
 			dialog.setTitle("Login");
 			dialog.setMessage("Please wait");
 			dialog.show();
@@ -201,7 +196,6 @@ public class LoginActivity extends Activity {
 
 			@Override
 			public void onReceive(Context context, Intent intent) {
-				// TODO Auto-generated method stub
 				ack = intent.getExtras();
 				Log.d("myTag", "Registration receiver \n" + ack.toString());
 				if (receiver != null) {
@@ -225,7 +219,6 @@ public class LoginActivity extends Activity {
 
 			@Override
 			public void run() {
-				// TODO Auto-generated method stub
 				if (receiver != null) {
 					unregisterReceiver(receiver);
 					receiver = null;
@@ -273,7 +266,6 @@ public class LoginActivity extends Activity {
 
 			Log.i("Eamorr", "result is " + hash);
 		} catch (NoSuchAlgorithmException e1) {
-			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
 
@@ -287,7 +279,6 @@ public class LoginActivity extends Activity {
 
 			@Override
 			protected String doInBackground(Void... params) {
-				// TODO Auto-generated method stub
 				String ip = "";
 				try {
 					HttpClient httpClient = new DefaultHttpClient();

@@ -29,17 +29,17 @@ import com.google.android.gms.gcm.GoogleCloudMessaging;
 
 public class RegistrationActivity extends Activity {
 
-	EditText username, email, password;
-	Button registration, back;
+	private EditText username, email, password;
+	private Button registration, back;
 
-	Context context;
-	public ProgressDialog dialog;
-	SendRequest sendRequest;
-	String regId;
-	Bundle data, ack;
-	JSONObject json;
-	BroadcastReceiver receiver;
-	GoogleCloudMessaging gcm;
+	private Context context;
+	private ProgressDialog dialog;
+	private SendRequest sendRequest;
+	private String regId;
+	private Bundle data, ack;
+	private JSONObject json;
+	private BroadcastReceiver receiver;
+	private GoogleCloudMessaging gcm;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -80,36 +80,41 @@ public class RegistrationActivity extends Activity {
 					}
 					Log.d("myTag", json.toString());
 
-					List<CompressedData> list = new ArrayList<CompressedData>();
-					list = CompressUtils.getCompressedAndChunkedData(
-							json.toString(), 500);
-					Log.d("myTag", list.get(0).toString());
-					data.putString("t", "0");
-					if (list.get(0).getCompressedPayload() != null) {
-						data.putString("p", list.get(0).getCompressedPayload());
-					}
-					if (list.get(0).getDecompressedSize() != null) {
-						data.putString("s", Integer.toString(list.get(0)
-								.getDecompressedSize()));
-					}
-					if (list.get(0).getCompressed() != null) {
-						data.putString("c",
-								Boolean.toString(list.get(0).getCompressed()));
-					}
-					if (list.get(0).getMessageId() != null) {
-						data.putString("msgId", list.get(0).getMessageId());
-					}
-					if (list.get(0).getSequenceNumber() != null) {
-						data.putString("sn", Integer.toString(list.get(0)
-								.getSequenceNumber()));
-					}
-					if (list.get(0).getTotalNumber() != null) {
-						data.putString("tn",
-								Integer.toString(list.get(0).getTotalNumber()));
-					}
-					Log.d("myTag", data.toString());
+					List<CompressedData> list = CompressUtils
+							.getCompressedAndChunkedData(json.toString(), 500);
 
-					dialog = new ProgressDialog(RegistrationActivity.this);
+					data.putString("t", "0");
+					for (int i = 0; i < list.size(); i++) {
+						CompressedData compressedData = list.get(i);
+						Log.d("myTag", compressedData.toString());
+						if (compressedData.getCompressedPayload() != null) {
+							data.putString("p",
+									compressedData.getCompressedPayload());
+						}
+						if (compressedData.getDecompressedSize() != null) {
+							data.putString("s", Integer.toString(compressedData
+									.getDecompressedSize()));
+						}
+						if (compressedData.getCompressed() != null) {
+							data.putString("c", Boolean.toString(compressedData
+									.getCompressed()));
+						}
+						if (compressedData.getMessageId() != null) {
+							data.putString("msgId",
+									compressedData.getMessageId());
+						}
+						if (compressedData.getSequenceNumber() != null) {
+							data.putString("sn", Integer
+									.toString(compressedData
+											.getSequenceNumber()));
+						}
+						if (compressedData.getTotalNumber() != null) {
+							data.putString("tn", Integer
+									.toString(compressedData.getTotalNumber()));
+						}
+						Log.d("myTag", data.toString());
+					}
+					dialog = new ProgressDialog(context);
 					dialog.setTitle("Registration");
 					dialog.setMessage("Please wait");
 					dialog.show();

@@ -15,7 +15,7 @@ public class GCMNotificationIntentService extends IntentService {
 
 	public static final int NOTIFICATION_ID = 1;
 	private NotificationManager mNotificationManager;
-	NotificationCompat.Builder builder;
+	private NotificationCompat.Builder builder;
 
 	public GCMNotificationIntentService() {
 		super("GcmIntentService");

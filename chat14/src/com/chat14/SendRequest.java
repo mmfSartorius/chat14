@@ -14,9 +14,9 @@ import com.google.android.gms.gcm.GoogleCloudMessaging;
 
 public class SendRequest extends AsyncTask<Void, String, String> {
 
-	Bundle data;
-	String id;
-	GoogleCloudMessaging gcm;
+	private Bundle data;
+	private String id;
+	private GoogleCloudMessaging gcm;
 
 	SendRequest(Bundle bundle, String id, GoogleCloudMessaging gcm) {
 		data = bundle;
