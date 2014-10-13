@@ -60,32 +60,7 @@ public class RegistrationActivity extends Activity {
 			@Override
 			public void onClick(View arg0) {
 				// TODO Auto-generated method stub
-				if (username.getText().toString().length() != 0
-						&& email.getText().toString().length() != 0
-						&& password.getText().toString().length() != 0) {
-					json = new JSONObject();
-
-					try {
-						json.put(Config.LOGIN, username.getText().toString());
-						json.put(Config.EMAIL, email.getText().toString());
-						json.put(Config.PASSWORD, UtilityMethods
-								.encryptData(password.getText().toString()));
-						json.put(Config.EXTERNAL_IP, getIntent().getExtras()
-								.get("ip"));
-					} catch (JSONException e) {
-						e.printStackTrace();
-					}
-					Log.d("myTag", json.toString());
-
-					createReceiver();
-					UtilityMethods.fillAndSendBundle(json, gcm);
-
-					dialog = new ProgressDialog(context);
-					dialog.setTitle("Registration");
-					dialog.setMessage("Please wait");
-					dialog.show();
-
-				}
+				register();
 
 			}
 		});
@@ -112,6 +87,47 @@ public class RegistrationActivity extends Activity {
 			if (dialog.isShowing()) {
 				dialog.dismiss();
 			}
+		}
+	}
+
+	private void register() {
+		if (username.getText().toString().length() >= 3
+				&& username.getText().toString().length() <= 15) {
+			username.setError(null);
+			if (email.getText().toString().length() >= 5
+					&& email.getText().toString().length() <= 50) {
+				if (password.getText().toString().length() >= 5) {
+					json = new JSONObject();
+
+					try {
+						json.put(Config.LOGIN, username.getText().toString());
+						json.put(Config.EMAIL, email.getText().toString());
+						json.put(Config.PASSWORD, UtilityMethods
+								.encryptData(password.getText().toString()));
+						json.put(Config.EXTERNAL_IP, getIntent().getExtras()
+								.get("ip"));
+					} catch (JSONException e) {
+						e.printStackTrace();
+					}
+					Log.d("myTag", json.toString());
+
+					createReceiver();
+					UtilityMethods.fillAndSendBundle(json, gcm);
+
+					dialog = new ProgressDialog(context);
+					dialog.setTitle("Registration");
+					dialog.setMessage("Please wait");
+					dialog.show();
+
+				} else {
+					password.setError(context
+							.getString(R.string.password_error));
+				}
+			} else {
+				email.setError(context.getString(R.string.email_error));
+			}
+		} else {
+			username.setError(context.getString(R.string.username_error));
 		}
 	}
 

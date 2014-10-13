@@ -6,6 +6,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.util.Log;
 
 public class DBProvider {
 	private DBHelper dbHelper;
@@ -16,12 +17,12 @@ public class DBProvider {
 
 	Context dbContext;
 
-	public DBProvider(Context context, String login) {
+	public DBProvider(Context context) {
 		this.dbContext = context;
-		DB_NAME = login;
 	}
 
-	public void open() {
+	public void open(String DB_NAME) {
+		DBProvider.DB_NAME = DB_NAME;
 		dbHelper = new DBHelper(dbContext, DB_NAME, DB_VERSION);
 		db = dbHelper.getWritableDatabase();
 	}
@@ -37,12 +38,30 @@ public class DBProvider {
 				null, null);
 	}
 
-	public Cursor getMesages(int id) {
+	public Cursor getMessages(int id) {
 		String selection = "posid = ?";
 		String[] selectionArgs = new String[] { Integer.toString(id) };
 
 		return db.query(DBHelper.DB_TABLE_MESSAGES, null, selection,
 				selectionArgs, null, null, null);
+	}
+
+	public long getLastMessage() {
+		Long lastTime = (long) 0;
+		Cursor cursor = db.rawQuery("SELECT MAX( " + DBHelper.COLUMN_TIME
+				+ " ) as " + DBHelper.COLUMN_TIME + " FROM "
+				+ DBHelper.DB_TABLE_MESSAGES, null);
+		Log.d("DB", cursor.toString());
+		if (cursor != null) {
+			if (cursor.moveToFirst()) {
+				if (!cursor.isNull(cursor.getColumnIndex(DBHelper.COLUMN_TIME))) {
+					lastTime = cursor.getLong(cursor
+							.getColumnIndex(DBHelper.COLUMN_TIME));
+				}
+			}
+		}
+
+		return lastTime;
 	}
 
 	public long addPerson(String name) {
@@ -55,7 +74,7 @@ public class DBProvider {
 	public void addMessage(String message, long posid) {
 		ContentValues cv = new ContentValues();
 		Date date = new Date();
-		
+
 		cv.put(DBHelper.COLUMN_MESSAGE, message);
 		cv.put(DBHelper.COLUMN_TIME, date.getTime());
 		cv.put(DBHelper.COLUMN_POSID, posid);

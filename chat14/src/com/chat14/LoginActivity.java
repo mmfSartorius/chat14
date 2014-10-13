@@ -1,9 +1,5 @@
 package com.chat14;
 
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ExecutionException;
@@ -17,6 +13,7 @@ import org.apache.http.util.EntityUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.BroadcastReceiver;
@@ -35,9 +32,7 @@ import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
 
-import com.chat14.helpers.CompressUtils;
-import com.chat14.helpers.Generator;
-import com.chat14.helpers.model.CompressedData;
+import com.chat14.database.DBProvider;
 import com.google.android.gms.gcm.GoogleCloudMessaging;
 
 public class LoginActivity extends Activity {
@@ -52,7 +47,7 @@ public class LoginActivity extends Activity {
 	private JSONObject json;
 	private ProgressDialog dialog;
 	private GoogleCloudMessaging gcm;
-	private String regId;
+	private DBProvider dbProvider;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -65,9 +60,10 @@ public class LoginActivity extends Activity {
 
 		ip = getCurrentIP();
 		gcm = GoogleCloudMessaging.getInstance(context);
+		dbProvider = new DBProvider(context);
 
 		RegisterInGCM regGCM = new RegisterInGCM(context, gcm);
-		regId = regGCM.registerGCM();
+		regGCM.registerGCM();
 
 		login = (Button) findViewById(R.id.login);
 		login.setOnClickListener(new OnClickListener() {
@@ -102,6 +98,7 @@ public class LoginActivity extends Activity {
 	@Override
 	protected void onDestroy() {
 		super.onDestroy();
+		dbProvider.close();
 		if (receiver != null) {
 			unregisterReceiver(receiver);
 			receiver = null;
@@ -132,28 +129,40 @@ public class LoginActivity extends Activity {
 		return super.onOptionsItemSelected(item);
 	}
 
+	@SuppressLint("DefaultLocale")
 	private void login() {
-		if (username.getText().toString().length() != 0
-				&& password.getText().toString().length() != 0) {
-			json = new JSONObject();
+		if (username.getText().toString().length() >= 3
+				&& username.getText().toString().length() <= 15) {
+			username.setError(null);
+			if (password.getText().toString().length() >= 5) {
+				json = new JSONObject();
+				json = new JSONObject();
+				dbProvider.open(username.getText().toString().toLowerCase());
 
-			try {
-				json.put(Config.LOGIN, username.getText().toString());
-				json.put(Config.PASSWORD, UtilityMethods.encryptData(password
-						.getText().toString()));
-				json.put(Config.EXTERNAL_IP, ip);
-			} catch (JSONException e) {
-				e.printStackTrace();
+				try {
+					json.put(Config.LOGIN, username.getText().toString());
+					json.put(Config.PASSWORD, UtilityMethods
+							.encryptData(password.getText().toString()));
+					json.put(Config.EXTERNAL_IP, ip);
+					json.put(Config.LAST_MESSAGE_TIME,
+							dbProvider.getLastMessage());
+				} catch (JSONException e) {
+					e.printStackTrace();
+				}
+
+				createReceiver();
+				UtilityMethods.fillAndSendBundle(json, gcm);
+
+				dialog = new ProgressDialog(context);
+				dialog.setTitle("Login");
+				dialog.setMessage("Please wait");
+				dialog.show();
+
+			} else {
+				password.setError(context.getString(R.string.password_error));
 			}
-
-			createReceiver();
-			UtilityMethods.fillAndSendBundle(json, gcm);
-
-			dialog = new ProgressDialog(context);
-			dialog.setTitle("Login");
-			dialog.setMessage("Please wait");
-			dialog.show();
-
+		} else {
+			username.setError(context.getString(R.string.username_error));
 		}
 
 	}

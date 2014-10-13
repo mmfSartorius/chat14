@@ -14,6 +14,7 @@ public interface Config {
 	static final String PASSWORD = "passwd";
 	static final String EMAIL = "email";
 	static final String EXTERNAL_IP = "ip";
+	static final String LAST_MESSAGE_TIME = "lastMsgTime";
 	
 
 }

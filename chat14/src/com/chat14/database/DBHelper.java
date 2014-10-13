@@ -3,6 +3,7 @@ package com.chat14.database;
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.util.Log;
 
 public class DBHelper extends SQLiteOpenHelper {
 	public static final String DB_TABLE_PERSONS = "persons";
@@ -26,11 +27,11 @@ public class DBHelper extends SQLiteOpenHelper {
 
 		final String execStringPersons = "create table " + DB_TABLE_PERSONS
 				+ " (" + COLUMN_ID + " integer primary key autoincrement,"
-				+ COLUMN_NAME + " text," + ");";
+				+ COLUMN_NAME + " text" + ");";
 		db.execSQL(execStringPersons);
 		final String execStringMessages = "create table " + DB_TABLE_MESSAGES
 				+ " (" + COLUMN_ID + " integer primary key autoincrement,"
-				+ COLUMN_POSID + " integer," + COLUMN_MESSAGE + " text"
+				+ COLUMN_POSID + " integer," + COLUMN_MESSAGE + " text,"
 				+ COLUMN_TIME + " long" + ");";
 		db.execSQL(execStringMessages);
 
