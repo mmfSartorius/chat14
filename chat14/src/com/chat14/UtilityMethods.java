@@ -47,14 +47,14 @@ public class UtilityMethods {
 		return hash;
 	}
 
-	public static void fillAndSendBundle(JSONObject json, GoogleCloudMessaging gcm) {
+	public static void fillAndSendBundle(JSONObject json, GoogleCloudMessaging gcm, String commandType) {
 		Bundle data = new Bundle();
 		List<CompressedData> list = CompressUtils.getCompressedAndChunkedData(
 				json.toString(), 3000);
 		for (int i = 0; i < list.size(); i++) {
 			CompressedData compressedData = list.get(i);
-			Log.d("myTag", compressedData.toString());
-			data.putString("t", "1");
+			Log.d("fillAndSendBundle", compressedData.toString());
+			data.putString("t", commandType);
 			if (compressedData.getCompressedPayload() != null) {
 				data.putString("p", compressedData.getCompressedPayload());
 			}
@@ -77,7 +77,7 @@ public class UtilityMethods {
 				data.putString("tn",
 						Integer.toString(compressedData.getTotalNumber()));
 			}
-			Log.d("myTag", data.toString());
+			Log.d("fillAndSendBundle", "Send Bundle " + data.toString());
 			SendRequest sendRequest = new SendRequest(data, Generator
 					.getInstance().getRandomUUID(), gcm);
 			sendRequest.execute();

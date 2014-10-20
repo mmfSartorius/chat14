@@ -33,6 +33,8 @@ import android.widget.CheckBox;
 import android.widget.EditText;
 
 import com.chat14.database.DBProvider;
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.gcm.GoogleCloudMessaging;
 
 public class LoginActivity extends Activity {
@@ -49,6 +51,8 @@ public class LoginActivity extends Activity {
 	private GoogleCloudMessaging gcm;
 	private DBProvider dbProvider;
 
+	private final static int PLAY_SERVICES_RESOLUTION_REQUEST = 9000;
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -58,41 +62,50 @@ public class LoginActivity extends Activity {
 		checkBoxRemember = (CheckBox) findViewById(R.id.checkBoxRemember);
 		context = this;
 
-		ip = getCurrentIP();
-		gcm = GoogleCloudMessaging.getInstance(context);
-		dbProvider = new DBProvider(context);
+		if (checkPlayServices()) {
+			ip = getCurrentIP();
+			gcm = GoogleCloudMessaging.getInstance(context);
+			dbProvider = new DBProvider(context);
 
-		RegisterInGCM regGCM = new RegisterInGCM(context, gcm);
-		regGCM.registerGCM();
+			RegisterInGCM regGCM = new RegisterInGCM(context, gcm);
+			regGCM.registerGCM();
 
-		login = (Button) findViewById(R.id.login);
-		login.setOnClickListener(new OnClickListener() {
+			login = (Button) findViewById(R.id.login);
+			login.setOnClickListener(new OnClickListener() {
 
-			@Override
-			public void onClick(View v) {
-				login();
+				@Override
+				public void onClick(View v) {
+					login();
 
-			}
-		});
-		registration = (Button) findViewById(R.id.registration);
-		registration.setOnClickListener(new OnClickListener() {
+				}
+			});
+			registration = (Button) findViewById(R.id.registration);
+			registration.setOnClickListener(new OnClickListener() {
 
-			@Override
-			public void onClick(View v) {
-				Intent intent = new Intent(context, RegistrationActivity.class);
-				intent.putExtra("ip", ip);
-				startActivity(intent);
+				@Override
+				public void onClick(View v) {
+					Intent intent = new Intent(context,
+							RegistrationActivity.class);
+					intent.putExtra("ip", ip);
+					startActivity(intent);
 
-			}
-		});
-		exit = (Button) findViewById(R.id.exit);
-		exit.setOnClickListener(new OnClickListener() {
+				}
+			});
+			exit = (Button) findViewById(R.id.exit);
+			exit.setOnClickListener(new OnClickListener() {
 
-			@Override
-			public void onClick(View v) {
-				finish();
-			}
-		});
+				@Override
+				public void onClick(View v) {
+					finish();
+				}
+			});
+		}
+	}
+
+	@Override
+	protected void onResume() {
+		super.onResume();
+		checkPlayServices();
 	}
 
 	@Override
@@ -151,7 +164,8 @@ public class LoginActivity extends Activity {
 				}
 
 				createReceiver();
-				UtilityMethods.fillAndSendBundle(json, gcm);
+				UtilityMethods.fillAndSendBundle(json, gcm,
+						Config.COMMAND_TYPE_LOGIN);
 
 				dialog = new ProgressDialog(context);
 				dialog.setTitle("Login");
@@ -174,7 +188,6 @@ public class LoginActivity extends Activity {
 			@Override
 			public void onReceive(Context context, Intent intent) {
 				ack = intent.getExtras();
-				Log.d("myTag", "Registration receiver \n" + ack.toString());
 				if (receiver != null) {
 					unregisterReceiver(receiver);
 					receiver = null;
@@ -184,8 +197,10 @@ public class LoginActivity extends Activity {
 				}
 			}
 		};
+
 		IntentFilter filter = new IntentFilter();
 		filter.addAction("com.google.android.c2dm.intent.RECEIVE");
+		filter.addAction("com.google.android.c2dm.intent.REGISTRATION");
 		registerReceiver(receiver, filter);
 
 	}
@@ -215,6 +230,22 @@ public class LoginActivity extends Activity {
 		SharedPreferences.Editor editor = prefs.edit();
 		editor.putString(key, data);
 		editor.commit();
+	}
+
+	private boolean checkPlayServices() {
+		int resultCode = GooglePlayServicesUtil
+				.isGooglePlayServicesAvailable(this);
+		if (resultCode != ConnectionResult.SUCCESS) {
+			if (GooglePlayServicesUtil.isUserRecoverableError(resultCode)) {
+				GooglePlayServicesUtil.getErrorDialog(resultCode, this,
+						PLAY_SERVICES_RESOLUTION_REQUEST).show();
+			} else {
+				Log.i("LoginActivity", "This device is not supported.");
+				finish();
+			}
+			return false;
+		}
+		return true;
 	}
 
 	private String getCurrentIP() {

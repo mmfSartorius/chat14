@@ -1,7 +1,5 @@
 package com.chat14;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -12,19 +10,21 @@ import android.app.Activity;
 import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.BroadcastReceiver;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.ServiceConnection;
+import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.IBinder;
+import android.support.v4.content.WakefulBroadcastReceiver;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.EditText;
 
-import com.chat14.helpers.CompressUtils;
-import com.chat14.helpers.Generator;
-import com.chat14.helpers.model.CompressedData;
 import com.google.android.gms.gcm.GoogleCloudMessaging;
 
 public class RegistrationActivity extends Activity {
@@ -34,12 +34,13 @@ public class RegistrationActivity extends Activity {
 
 	private Context context;
 	private ProgressDialog dialog;
-	private SendRequest sendRequest;
-	private String regId;
 	private Bundle ack;
 	private JSONObject json;
 	private BroadcastReceiver receiver;
 	private GoogleCloudMessaging gcm;
+
+	public static final String TAG = "RegistrationActivity";
+	public static final String intentAction = "com.chat14.registeractivity";
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -109,10 +110,11 @@ public class RegistrationActivity extends Activity {
 					} catch (JSONException e) {
 						e.printStackTrace();
 					}
-					Log.d("myTag", json.toString());
+					Log.d(TAG, "Registration activity json" + json.toString());
 
 					createReceiver();
-					UtilityMethods.fillAndSendBundle(json, gcm);
+					UtilityMethods.fillAndSendBundle(json, gcm,
+							Config.COMMAND_TYPE_REGISTRATION);
 
 					dialog = new ProgressDialog(context);
 					dialog.setTitle("Registration");
@@ -133,12 +135,29 @@ public class RegistrationActivity extends Activity {
 
 	private void createReceiver() {
 		createTimer();
+		final ServiceConnection conn = new ServiceConnection() {
+			
+			@Override
+			public void onServiceDisconnected(ComponentName name) {
+				// TODO Auto-generated method stub
+				
+			}
+			
+			@Override
+			public void onServiceConnected(ComponentName name, IBinder service) {
+				// TODO Auto-generated method stub
+				
+			}
+		};
 		receiver = new BroadcastReceiver() {
 
 			@Override
-			public void onReceive(Context context, Intent intent) {
-				ack = intent.getExtras();
-				Log.d("myTag", "Registration receiver \n" + ack.toString());
+			public void onReceive(Context context, final Intent intent) {
+				setResultCode(Activity.RESULT_OK);	
+				ComponentName comp = new ComponentName(
+						context.getPackageName(),
+						GCMNotificationIntentService.class.getName());
+				bindService(intent.setComponent(comp), conn, BIND_DEBUG_UNBIND);
 				if (receiver != null) {
 					unregisterReceiver(receiver);
 					receiver = null;
@@ -149,7 +168,7 @@ public class RegistrationActivity extends Activity {
 			}
 		};
 		IntentFilter filter = new IntentFilter();
-		filter.addAction("com.google.android.c2dm.intent.RECEIVE");
+		filter.addAction(intentAction);
 		registerReceiver(receiver, filter);
 
 	}

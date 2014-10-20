@@ -6,6 +6,7 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 
@@ -16,15 +17,27 @@ public class GCMNotificationIntentService extends IntentService {
 	public static final int NOTIFICATION_ID = 1;
 	private NotificationManager mNotificationManager;
 	private NotificationCompat.Builder builder;
+	private boolean notification = true;
 
 	public GCMNotificationIntentService() {
 		super("GcmIntentService");
+	}
+
+	@Override
+	public IBinder onBind(Intent intent) {
+		// TODO Auto-generated method stub
+		Log.i(TAG, "onBind");
+		notification = false;
+		return super.onBind(intent);
 	}
 
 	public static final String TAG = "GCMNotificationIntentService";
 
 	@Override
 	protected void onHandleIntent(Intent intent) {
+
+		sendOrderedBroadcast(new Intent(RegistrationActivity.intentAction),
+				null);
 		Bundle extras = intent.getExtras();
 		GoogleCloudMessaging gcm = GoogleCloudMessaging.getInstance(this);
 
@@ -40,10 +53,12 @@ public class GCMNotificationIntentService extends IntentService {
 						+ extras.toString());
 			} else if (GoogleCloudMessaging.MESSAGE_TYPE_MESSAGE
 					.equals(messageType)) {
-
-				sendNotification("SERVER_MESSAGE: " + extras.get(Config.MESSAGE));
+				if (notification) {
+					sendNotification("SERVER_MESSAGE: "
+							+ extras.get(Config.MESSAGE));
+				}
 				Log.i(TAG, "SERVER_MESSAGE: " + extras.toString());
-				
+
 			}
 		}
 		GcmBroadcastReceiver.completeWakefulIntent(intent);

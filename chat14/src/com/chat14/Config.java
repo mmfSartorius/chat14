@@ -15,6 +15,8 @@ public interface Config {
 	static final String EMAIL = "email";
 	static final String EXTERNAL_IP = "ip";
 	static final String LAST_MESSAGE_TIME = "lastMsgTime";
-	
+
+	static final String COMMAND_TYPE_REGISTRATION = "0";
+	static final String COMMAND_TYPE_LOGIN = "1";
 
 }
