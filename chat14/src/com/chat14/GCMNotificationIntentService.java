@@ -10,6 +10,7 @@ import android.os.IBinder;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 
+import com.chat14.helpers.CompressUtils;
 import com.google.android.gms.gcm.GoogleCloudMessaging;
 
 public class GCMNotificationIntentService extends IntentService {
@@ -17,28 +18,18 @@ public class GCMNotificationIntentService extends IntentService {
 	public static final int NOTIFICATION_ID = 1;
 	private NotificationManager mNotificationManager;
 	private NotificationCompat.Builder builder;
-	private boolean notification = true;
 
 	public GCMNotificationIntentService() {
 		super("GcmIntentService");
-	}
-
-	@Override
-	public IBinder onBind(Intent intent) {
-		// TODO Auto-generated method stub
-		Log.i(TAG, "onBind");
-		notification = false;
-		return super.onBind(intent);
 	}
 
 	public static final String TAG = "GCMNotificationIntentService";
 
 	@Override
 	protected void onHandleIntent(Intent intent) {
-
-		sendOrderedBroadcast(new Intent(RegistrationActivity.intentAction),
-				null);
+		Log.d(TAG, "onHandleIntent");
 		Bundle extras = intent.getExtras();
+
 		GoogleCloudMessaging gcm = GoogleCloudMessaging.getInstance(this);
 
 		String messageType = gcm.getMessageType(intent);
@@ -53,10 +44,10 @@ public class GCMNotificationIntentService extends IntentService {
 						+ extras.toString());
 			} else if (GoogleCloudMessaging.MESSAGE_TYPE_MESSAGE
 					.equals(messageType)) {
-				if (notification) {
-					sendNotification("SERVER_MESSAGE: "
-							+ extras.get(Config.MESSAGE));
-				}
+
+				sendNotification("SERVER_MESSAGE: "
+						+ extras.get(Config.MESSAGE));
+
 				Log.i(TAG, "SERVER_MESSAGE: " + extras.toString());
 
 			}

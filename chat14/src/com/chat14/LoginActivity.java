@@ -17,12 +17,14 @@ import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.BroadcastReceiver;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.v4.content.WakefulBroadcastReceiver;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -52,6 +54,8 @@ public class LoginActivity extends Activity {
 	private DBProvider dbProvider;
 
 	private final static int PLAY_SERVICES_RESOLUTION_REQUEST = 9000;
+
+	public final static String TAG = "LoginActivity";
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -183,15 +187,17 @@ public class LoginActivity extends Activity {
 
 	private void createReceiver() {
 		createTimer();
-		receiver = new BroadcastReceiver() {
+		receiver = new WakefulBroadcastReceiver() {
 
 			@Override
 			public void onReceive(Context context, Intent intent) {
-				ack = intent.getExtras();
-				if (receiver != null) {
-					unregisterReceiver(receiver);
-					receiver = null;
-				}
+				setResultCode(Activity.RESULT_OK);
+				ComponentName comp = new ComponentName(
+						context.getPackageName(),
+						GCMAckIntentService.class.getName());
+				startWakefulService(context, (intent.setComponent(comp)));
+				setResultCode(Activity.RESULT_OK);
+
 				if (dialog.isShowing()) {
 					dialog.dismiss();
 				}
@@ -199,9 +205,11 @@ public class LoginActivity extends Activity {
 		};
 
 		IntentFilter filter = new IntentFilter();
+		filter.setPriority(60);
 		filter.addAction("com.google.android.c2dm.intent.RECEIVE");
 		filter.addAction("com.google.android.c2dm.intent.REGISTRATION");
-		registerReceiver(receiver, filter);
+		registerReceiver(receiver, filter,
+				"com.google.android.c2dm.permission.SEND", null);
 
 	}
 

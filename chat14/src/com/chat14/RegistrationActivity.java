@@ -34,13 +34,12 @@ public class RegistrationActivity extends Activity {
 
 	private Context context;
 	private ProgressDialog dialog;
-	private Bundle ack;
 	private JSONObject json;
 	private BroadcastReceiver receiver;
 	private GoogleCloudMessaging gcm;
 
 	public static final String TAG = "RegistrationActivity";
-	public static final String intentAction = "com.chat14.registeractivity";
+
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -79,7 +78,7 @@ public class RegistrationActivity extends Activity {
 	@Override
 	protected void onDestroy() {
 		// TODO Auto-generated method stub
-		super.onDestroy();
+		super.onDestroy();		
 		if (receiver != null) {
 			unregisterReceiver(receiver);
 			receiver = null;
@@ -135,41 +134,22 @@ public class RegistrationActivity extends Activity {
 
 	private void createReceiver() {
 		createTimer();
-		final ServiceConnection conn = new ServiceConnection() {
-			
-			@Override
-			public void onServiceDisconnected(ComponentName name) {
-				// TODO Auto-generated method stub
-				
-			}
-			
-			@Override
-			public void onServiceConnected(ComponentName name, IBinder service) {
-				// TODO Auto-generated method stub
-				
-			}
-		};
 		receiver = new BroadcastReceiver() {
 
 			@Override
 			public void onReceive(Context context, final Intent intent) {
-				setResultCode(Activity.RESULT_OK);	
-				ComponentName comp = new ComponentName(
-						context.getPackageName(),
-						GCMNotificationIntentService.class.getName());
-				bindService(intent.setComponent(comp), conn, BIND_DEBUG_UNBIND);
-				if (receiver != null) {
-					unregisterReceiver(receiver);
-					receiver = null;
-				}
+
 				if (dialog.isShowing()) {
 					dialog.dismiss();
 				}
 			}
 		};
 		IntentFilter filter = new IntentFilter();
-		filter.addAction(intentAction);
-		registerReceiver(receiver, filter);
+		filter.setPriority(60);
+		filter.addAction("com.google.android.c2dm.intent.RECEIVE");
+		filter.addAction("com.google.android.c2dm.intent.REGISTRATION");
+		registerReceiver(receiver, filter,
+				"com.google.android.c2dm.permission.SEND", null);
 
 	}
 

@@ -47,7 +47,8 @@ public class UtilityMethods {
 		return hash;
 	}
 
-	public static void fillAndSendBundle(JSONObject json, GoogleCloudMessaging gcm, String commandType) {
+	public static void fillAndSendBundle(JSONObject json,
+			GoogleCloudMessaging gcm, String commandType) {
 		Bundle data = new Bundle();
 		List<CompressedData> list = CompressUtils.getCompressedAndChunkedData(
 				json.toString(), 3000);
