@@ -43,7 +43,7 @@
         <receiver
             android:name=".GcmBroadcastReceiver"
             android:permission="com.google.android.c2dm.permission.SEND" >
-            <intent-filter android:priority="50">
+            <intent-filter android:priority="50" >
                 <action android:name="com.google.android.c2dm.intent.RECEIVE" />
                 <action android:name="com.google.android.c2dm.intent.REGISTRATION" />
 
@@ -52,7 +52,7 @@
         </receiver>
 
         <service android:name=".GCMNotificationIntentService" />
-        <service android:name=".GCMAckIntentService" />
+        <service android:name=".GcmAckIntentService" />
 
         <meta-data
             android:name="com.google.android.gms.version"

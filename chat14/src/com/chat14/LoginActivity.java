@@ -194,10 +194,8 @@ public class LoginActivity extends Activity {
 				setResultCode(Activity.RESULT_OK);
 				ComponentName comp = new ComponentName(
 						context.getPackageName(),
-						GCMAckIntentService.class.getName());
+						GcmAckIntentService.class.getName());
 				startWakefulService(context, (intent.setComponent(comp)));
-				setResultCode(Activity.RESULT_OK);
-
 				if (dialog.isShowing()) {
 					dialog.dismiss();
 				}

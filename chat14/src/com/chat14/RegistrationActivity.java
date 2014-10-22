@@ -14,10 +14,7 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.ServiceConnection;
-import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.IBinder;
 import android.support.v4.content.WakefulBroadcastReceiver;
 import android.util.Log;
 import android.view.View;
@@ -39,7 +36,6 @@ public class RegistrationActivity extends Activity {
 	private GoogleCloudMessaging gcm;
 
 	public static final String TAG = "RegistrationActivity";
-
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -78,7 +74,7 @@ public class RegistrationActivity extends Activity {
 	@Override
 	protected void onDestroy() {
 		// TODO Auto-generated method stub
-		super.onDestroy();		
+		super.onDestroy();
 		if (receiver != null) {
 			unregisterReceiver(receiver);
 			receiver = null;
@@ -134,11 +130,15 @@ public class RegistrationActivity extends Activity {
 
 	private void createReceiver() {
 		createTimer();
-		receiver = new BroadcastReceiver() {
+		receiver = new WakefulBroadcastReceiver() {
 
 			@Override
 			public void onReceive(Context context, final Intent intent) {
-
+				setResultCode(Activity.RESULT_OK);
+				ComponentName comp = new ComponentName(
+						context.getPackageName(),
+						GcmAckIntentService.class.getName());
+				startWakefulService(context, (intent.setComponent(comp)));
 				if (dialog.isShowing()) {
 					dialog.dismiss();
 				}

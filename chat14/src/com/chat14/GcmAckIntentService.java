@@ -11,9 +11,9 @@ import android.widget.Toast;
 
 import com.google.android.gms.gcm.GoogleCloudMessaging;
 
-public class GCMAckIntentService extends IntentService {
+public class GcmAckIntentService extends IntentService {
 
-	public GCMAckIntentService() {
+	public GcmAckIntentService() {
 		super("RegistrationAck");
 		// TODO Auto-generated constructor stub
 
